@@ -31,7 +31,7 @@ func Mostlike(data []byte) string {
 	if s := checkbom(data); s != "" {
 		return s
 	}
-	lb := check(data, []detect{&utf8{}, &utf16BE{}, &utf16LE{}, &utf32BE{}, &utf32LE{}, &hzgb2312{}})
+	lb := check(data, []detect{&utf8{}, &hzgb2312{}})
 	if len(lb) > 0 {
 		x, y := -1, -100.0
 		for i, l := range lb {
@@ -41,7 +41,7 @@ func Mostlike(data []byte) string {
 		}
 		return lb[x].String()
 	}
-	lp := check(data, []detect{&gbk{}, &big5{}, &eucJP{}, &shiftJIS{}, &iso2022JP{}, &eucKR{}, &gb18030{}})
+	lp := check(data, []detect{&gbk{}, &big5{}, &gb18030{}})
 	if len(lp) > 0 {
 		x, y := -1, -100.0
 		for i, l := range lp {
@@ -60,9 +60,8 @@ func Possible(data []byte) []string {
 		return []string{s}
 	}
 	lb := check(data, []detect{
-		&utf8{}, &utf16BE{}, &utf16LE{}, &utf32BE{}, &utf32LE{},
-		&hzgb2312{}, &gbk{}, &big5{}, &gb18030{},
-		&eucKR{}, &eucJP{}, &shiftJIS{}, &iso2022JP{}})
+		&utf8{},
+		&hzgb2312{}, &gbk{}, &big5{}, &gb18030{}})
 	if l := len(lb); l > 0 {
 		x := make(tks, l)
 		for i, e := range lb {

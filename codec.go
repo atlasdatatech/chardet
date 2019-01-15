@@ -2,15 +2,13 @@ package chardet
 
 import (
 	"bytes"
-	"code.google.com/p/go.text/encoding"
-	"code.google.com/p/go.text/encoding/japanese"
-	"code.google.com/p/go.text/encoding/korean"
-	"code.google.com/p/go.text/encoding/simplifiedchinese"
-	"code.google.com/p/go.text/encoding/traditionalchinese"
-	"code.google.com/p/go.text/encoding/unicode"
-	"code.google.com/p/go.text/transform"
 	"errors"
 	"io"
+
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/encoding/traditionalchinese"
+	"golang.org/x/text/transform"
 )
 
 // 提供的编码格式字符串未知时，会返回本错误
@@ -18,19 +16,11 @@ var ErrUnknown = errors.New("unknown codec")
 
 // Codec映射编码格式字符串到对应的编解码器，因此不需在导入encoding等包
 var Codec = map[string]encoding.Encoding{
-	"utf-8":       encoding.Nop,
-	"utf-16be":    unicode.UTF16(unicode.BigEndian, unicode.IgnoreBOM),
-	"utf-16le":    unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM),
-	"utf-32be":    UTF32BE,
-	"utf-32le":    UTF32LE,
-	"hz-gb2312":   simplifiedchinese.HZGB2312,
-	"gbk":         simplifiedchinese.GBK,
-	"big5":        traditionalchinese.Big5,
-	"gb18030":     simplifiedchinese.GB18030,
-	"euc-kr":      korean.EUCKR,
-	"euc-jp":      japanese.EUCJP,
-	"iso-2022-jp": japanese.ISO2022JP,
-	"shift-jis":   japanese.ShiftJIS,
+	"utf-8":     encoding.Nop,
+	"hz-gb2312": simplifiedchinese.HZGB2312,
+	"gbk":       simplifiedchinese.GBK,
+	"big5":      traditionalchinese.Big5,
+	"gb18030":   simplifiedchinese.GB18030,
 }
 
 // 函数返回一个Reader接口，该接口将从r读取的数据解码后返回；
@@ -38,25 +28,9 @@ var Codec = map[string]encoding.Encoding{
 // 函数会首先解码data，以便返回完整的解码后文本，会自动处理BOM。
 func NewReader(r io.Reader, codec string, data []byte) (io.Reader, error) {
 	switch codec {
-	case "utf-16be":
-		if len(data) >= 2 && string(data[:2]) == "\xFE\xFF" {
-			data = data[2:]
-		}
-	case "utf-16le":
-		if len(data) >= 2 && string(data[:2]) == "\xFF\xFE" {
-			data = data[2:]
-		}
 	case "utf-8":
 		if len(data) >= 3 && string(data[:3]) == "\xEF\xBB\xBF" {
 			data = data[3:]
-		}
-	case "utf-32be":
-		if len(data) >= 4 && string(data[:4]) == "\x00\x00\xFE\xFF" {
-			data = data[4:]
-		}
-	case "utf-32le":
-		if len(data) >= 4 && string(data[:4]) == "\xFF\xFE\x00\x00" {
-			data = data[4:]
 		}
 	case "gb18030":
 		if len(data) >= 4 && string(data[:4]) == "\x84\x31\x95\x33" {
@@ -75,16 +49,8 @@ func NewReader(r io.Reader, codec string, data []byte) (io.Reader, error) {
 func NeWriter(w io.Writer, codec string, bom bool) (io.Writer, error) {
 	if bom {
 		switch codec {
-		case "utf-16be":
-			w.Write([]byte("\xFE\xFF"))
-		case "utf-16le":
-			w.Write([]byte("\xFF\xFE"))
 		case "utf-8":
 			w.Write([]byte("\xEF\xBB\xBF"))
-		case "utf-32be":
-			w.Write([]byte("\x00\x00\xFE\xFF"))
-		case "utf-32le":
-			w.Write([]byte("\xFF\xFE\x00\x00"))
 		case "gb18030":
 			w.Write([]byte("\x84\x31\x95\x33"))
 		}
